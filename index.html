@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archibrix — CA Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #1e1e1e;
+    --accent: #FFD700;
+    --accent2: #FF4D00;
+    --text: #f0f0f0;
+    --muted: #555;
+    --green: #00ff87;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(255,215,0,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,215,0,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .year-badge {
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+
+  /* CA Hero */
+  .ca-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.1s forwards;
+  }
+
+  .ca-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .ca-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .ca-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(48px, 10vw, 80px);
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -2px;
+    transition: all 0.4s ease;
+  }
+
+  .ca-amount.bump {
+    animation: bump 0.4s ease;
+  }
+
+  .ca-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Form */
+  .form-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+  }
+
+  .form-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  input::placeholder { color: var(--muted); }
+
+  select option { background: var(--bg); }
+
+  .btn-add {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+
+  .btn-add:hover {
+    background: #ffe033;
+    transform: translateY(-1px);
+  }
+
+  .btn-add:active { transform: translateY(0); }
+
+  /* Transactions */
+  .transactions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.6s ease 0.3s forwards;
+  }
+
+  .transactions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .transactions-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .btn-clear {
+    font-size: 11px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+  }
+
+  .btn-clear:hover { color: var(--accent2); }
+
+  .transactions-list { max-height: 400px; overflow-y: auto; }
+
+  .transaction-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    animation: slideIn 0.3s ease;
+    transition: background 0.2s;
+  }
+
+  .transaction-item:hover { background: rgba(255,215,0,0.02); }
+  .transaction-item:last-child { border-bottom: none; }
+
+  .transaction-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .transaction-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .transaction-info { display: flex; flex-direction: column; gap: 2px; }
+
+  .transaction-client {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .transaction-meta {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .transaction-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .transaction-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    margin-left: 12px;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+
+  .transaction-delete:hover { color: var(--accent2); }
+
+  .empty-state {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green);
+    color: #000;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); color: #fff; }
+    100% { transform: scale(1); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">ARCHI<span>BRIX</span></div>
+    <div class="year-badge" id="yearBadge">2025</div>
+  </div>
+
+  <div class="ca-hero">
+    <div class="ca-label">Chiffre d'affaires</div>
+    <div class="ca-amount" id="caAmount">0 €</div>
+    <div class="ca-stats">
+      <div class="stat">
+        <div class="stat-value" id="statCount">0</div>
+        <div class="stat-label">Factures</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statAvg">0 €</div>
+        <div class="stat-label">Panier moyen</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statTop">—</div>
+        <div class="stat-label">Top client</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-title">+ Nouvelle facture</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Client</label>
+        <input type="text" id="inputClient" placeholder="VINCI" />
+      </div>
+      <div class="form-group">
+        <label>Montant (€)</label>
+        <input type="number" id="inputAmount" placeholder="2400" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Offre</label>
+        <select id="inputType">
+          <option value="cadeaux">🎁 Cadeaux Corporate</option>
+          <option value="maquette">🏗️ Maquette Architecturale</option>
+          <option value="team">🤝 Team Building</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="inputDate" />
+      </div>
+    </div>
+    <button class="btn-add" onclick="addInvoice()">ENREGISTRER LA FACTURE</button>
+  </div>
+
+  <div class="transactions">
+    <div class="transactions-header">
+      <div class="transactions-title">Historique</div>
+      <button class="btn-clear" onclick="clearAll()">TOUT EFFACER</button>
+    </div>
+    <div class="transactions-list" id="transactionsList">
+      <div class="empty-state">Aucune facture enregistrée</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Facture enregistrée</div>
+
+<script>
+  const TYPE_COLORS = {
+    cadeaux: '#FFD700',
+    maquette: '#FF4D00',
+    team: '#00ff87',
+  };
+
+  const TYPE_LABELS = {
+    cadeaux: '🎁 Cadeaux',
+    maquette: '🏗️ Maquette',
+    team: '🤝 Team Building',
+  };
+
+  let invoices = JSON.parse(localStorage.getItem('archibrix_invoices') || '[]');
+
+  // Set default date to today
+  document.getElementById('inputDate').valueAsDate = new Date();
+  document.getElementById('yearBadge').textContent = new Date().getFullYear();
+
+  function formatEuro(amount) {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(amount);
+  }
+
+  function addInvoice() {
+    const client = document.getElementById('inputClient').value.trim();
+    const amount = parseFloat(document.getElementById('inputAmount').value);
+    const type = document.getElementById('inputType').value;
+    const date = document.getElementById('inputDate').value;
+
+    if (!client || !amount || amount <= 0) {
+      document.getElementById('inputClient').focus();
+      return;
+    }
+
+    const invoice = {
+      id: Date.now(),
+      client: client.toUpperCase(),
+      amount,
+      type,
+      date: date || new Date().toISOString().split('T')[0],
+    };
+
+    invoices.unshift(invoice);
+    localStorage.setItem('archibrix_invoices', JSON.stringify(invoices));
+
+    // Reset form
+    document.getElementById('inputClient').value = '';
+    document.getElementById('inputAmount').value = '';
+    document.getElementById('inputDate').valueAsDate = new Date();
+
+    render();
+    showToast();
+
+    // Bump CA
+    const caEl = document.getElementById('caAmount');
+    caEl.classList.remove('bump');
+    void caEl.offsetWidth;
+    caEl.classList.add('bump');
+  }
+
+  function deleteInvoice(id) {
+    invoices = invoices.filter(inv => inv.id !== id);
+    localStorage.setItem('archibrix_invoices', JSON.stringify(invoices));
+    render();
+  }
+
+  function clearAll() {
+    if (confirm('Effacer toutes les factures ?')) {
+      invoices = [];
+      localStorage.setItem('archibrix_invoices', JSON.stringify(invoices));
+      render();
+    }
+  }
+
+  function render() {
+    const total = invoices.reduce((sum, inv) => sum + inv.amount, 0);
+    const count = invoices.length;
+    const avg = count > 0 ? total / count : 0;
+
+    // Top client
+    const clientTotals = {};
+    invoices.forEach(inv => {
+      clientTotals[inv.client] = (clientTotals[inv.client] || 0) + inv.amount;
+    });
+    const topClient = Object.entries(clientTotals).sort((a, b) => b[1] - a[1])[0];
+
+    document.getElementById('caAmount').textContent = formatEuro(total);
+    document.getElementById('statCount').textContent = count;
+    document.getElementById('statAvg').textContent = formatEuro(avg);
+    document.getElementById('statTop').textContent = topClient ? topClient[0] : '—';
+
+    const list = document.getElementById('transactionsList');
+
+    if (invoices.length === 0) {
+      list.innerHTML = '<div class="empty-state">Aucune facture enregistrée</div>';
+      return;
+    }
+
+    list.innerHTML = invoices.map(inv => `
+      <div class="transaction-item">
+        <div class="transaction-left">
+          <div class="transaction-dot" style="background:${TYPE_COLORS[inv.type]}"></div>
+          <div class="transaction-info">
+            <div class="transaction-client">${inv.client}</div>
+            <div class="transaction-meta">${TYPE_LABELS[inv.type]} · ${formatDate(inv.date)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center">
+          <div class="transaction-amount">+${formatEuro(inv.amount)}</div>
+          <button class="transaction-delete" onclick="deleteInvoice(${inv.id})">×</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function showToast() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addInvoice();
+  });
+
+  render();
+</script>
+</body>
+</html>
