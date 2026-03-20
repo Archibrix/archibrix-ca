@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="https://p.trellocdn.com/power-up.min.js"></script>
+<script>
+TrelloPowerUp.initialize({
+  'board-buttons': function(t, options) {
+    return [{
+      text: '💰 CA',
+      callback: function(t) {
+        return t.popup({
+          title: '💰 CA Archibrix',
+          url: 'https://archibrix-ca.vercel.app',
+          height: 600,
+        });
+      }
+    }];
+  }
+});
+</script>
+</head>
+<body></body>
+</html>
